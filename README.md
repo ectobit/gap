@@ -2,9 +2,7 @@
 
 [![Build Status](https://github.com/ectobit/gap/workflows/check/badge.svg)](https://github.com/ectobit/gap/actions)
 [![Go Reference](https://pkg.go.dev/badge/go.ectobit.com/gap.svg)](https://pkg.go.dev/go.ectobit.com/gap)
-
-<!-- [![Go Report](https://goreportcard.com/badge/go.ectobit.com/gap)](https://goreportcard.com/report/go.ectobit.com/gap) -->
-
+![Go Coverage](https://img.shields.io/badge/coverage-86.4%25-brightgreen?style=flat&logo=go)
 [![License](https://img.shields.io/badge/license-BSD--2--Clause--Patent-orange.svg)](https://github.com/ectobit/gap/blob/main/LICENSE)
 
 Custom generic HTTP handler providing automatic JSON decoding/encoding of HTTP request/response to your concrete types. `gap.Wrap` allows to use these custom handlers just as idiomatic Go't HTTP handler functions.

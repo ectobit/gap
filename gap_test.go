@@ -47,6 +47,15 @@ func TestWrapGet(t *testing.T) {
 func TestWrapPost(t *testing.T) {
 	t.Parallel()
 
+	tests := map[string]struct {
+		in         string
+		wantStatus int
+		want       string
+	}{
+		"invalid json body": {"", http.StatusBadRequest, `{"errors":["invalid json body"]}`},
+		"ok":                {helloJSON(false), http.StatusOK, helloJSON(true)},
+	}
+
 	helloHandler := func(req *gap.Request[hello]) *gap.Response[hello] {
 		return &gap.Response[hello]{
 			Data: req.Data,
@@ -55,24 +64,35 @@ func TestWrapPost(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(gap.Wrap(helloHandler, lax.NewZapAdapter(zaptest.NewLogger(t)))))
 
-	buf := bytes.NewBufferString(helloJSON(false))
+	for n, test := range tests { //nolint:paralleltest
+		test := test
 
-	res, err := http.DefaultClient.Post(server.URL, "application/json", buf)
-	if err != nil {
-		t.Fatal(err)
+		t.Run(n, func(t *testing.T) {
+			t.Parallel()
+
+			buf := bytes.NewBufferString(test.in)
+
+			res, err := http.DefaultClient.Post(server.URL, "application/json", buf)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer close(t, res.Body)
+
+			if test.wantStatus != res.StatusCode {
+				t.Fatalf("Wrap() status code %d; want %d", res.StatusCode, test.wantStatus)
+			}
+
+			got, err := io.ReadAll(res.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if diff := cmp.Diff(test.want, string(got)); diff != "" {
+				t.Errorf("Wrap() mismatch (-want +got):\n%s", diff)
+			}
+		})
 	}
-
-	defer close(t, res.Body)
-
-	got, err := io.ReadAll(res.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if diff := cmp.Diff(helloJSON(true), string(got)); diff != "" {
-		t.Errorf("Wrap() mismatch (-want +got):\n%s", diff)
-	}
-
 }
 
 func close(t *testing.T, body io.Closer) {
