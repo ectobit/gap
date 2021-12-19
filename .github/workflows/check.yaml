@@ -1,0 +1,26 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: golang:1.18-rc-bullseye
+    steps:
+      - name: Set up cache
+        uses: actions/cache@v2.1.7
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      - name: Set up linters
+        run: curl -sSL -o /usr/local/bin/nancy https://github.com/sonatype-nexus-community/nancy/releases/download/v1.0.29/nancy-v1.0.29-linux-amd64 && chmod 755 /usr/local/bin/nancy
+      - name: Check out
+        uses: actions/checkout@v2.4.0
+      - name: Lint
+        run: go list -json -m all | nancy sleuth
+      - name: Test
+        run: make test-cov
