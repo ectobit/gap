@@ -1,6 +1,7 @@
 package gap_test
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +38,38 @@ func TestWrapGet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if diff := cmp.Diff(`{"data":{"message":"Hello world!"}}`, string(got)); diff != "" {
+	if diff := cmp.Diff(helloJSON(true), string(got)); diff != "" {
+		t.Errorf("Wrap() mismatch (-want +got):\n%s", diff)
+	}
+
+}
+
+func TestWrapPost(t *testing.T) {
+	t.Parallel()
+
+	helloHandler := func(req *gap.Request[hello]) *gap.Response[hello] {
+		return &gap.Response[hello]{
+			Data: req.Data,
+		}
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(gap.Wrap(helloHandler, lax.NewZapAdapter(zaptest.NewLogger(t)))))
+
+	buf := bytes.NewBufferString(helloJSON(false))
+
+	res, err := http.DefaultClient.Post(server.URL, "application/json", buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer close(t, res.Body)
+
+	got, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := cmp.Diff(helloJSON(true), string(got)); diff != "" {
 		t.Errorf("Wrap() mismatch (-want +got):\n%s", diff)
 	}
 
@@ -49,6 +81,14 @@ func close(t *testing.T, body io.Closer) {
 	if err := body.Close(); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func helloJSON(isResponse bool) string {
+	if isResponse {
+		return `{"data":{"message":"Hello world!"}}`
+	}
+
+	return `{"message":"Hello world!"}}`
 }
 
 type hello struct {
