@@ -5,10 +5,11 @@ go 1.18
 require (
 	github.com/google/go-cmp v0.5.6
 	go.ectobit.com/lax v0.0.0-20211219125348-4f593ad1090b
-	go.uber.org/zap v1.19.1
+	go.uber.org/zap v1.20.0
 )
 
 require (
+	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.1 // indirect
