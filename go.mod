@@ -3,7 +3,7 @@ module go.ectobit.com/gap
 go 1.18
 
 require (
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	go.ectobit.com/lax v0.0.0-20211219125348-4f593ad1090b
 	go.uber.org/zap v1.20.0
 )
