@@ -7,8 +7,12 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    container: golang:1.18-rc-bullseye
     steps:
+      - name: Set up go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18.0-rc1
+          stable: false
       - name: Set up cache
         uses: actions/cache@v2.1.7
         with:
